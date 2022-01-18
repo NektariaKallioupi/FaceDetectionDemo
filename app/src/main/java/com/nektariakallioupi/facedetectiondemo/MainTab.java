@@ -72,7 +72,7 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
         cameraInitialization();
 
         if (checkPermissions()) {
-            //main logic or main code
+
 
         } else {
             requestPermission();
