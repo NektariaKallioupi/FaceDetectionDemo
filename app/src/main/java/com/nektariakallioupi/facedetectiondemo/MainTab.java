@@ -69,10 +69,8 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
         cameraPreviewView = (PreviewView) findViewById(R.id.cameraView);
         mGraphicOverlay = findViewById(R.id.graphic_overlay);
 
-        cameraInitialization();
 
-        if (checkPermissions()) {
-
+        if (checkPermissions()){
 
         } else {
             requestPermission();
@@ -88,8 +86,8 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
     public void onClick(View v) {
         Utils.preventTwoClick(v);
         switch (v.getId()) {
-            case R.id.reverseBtn:
-              //  runFaceContourDetection();
+//            case R.id.reverseBtn:
+//
             case R.id.exitBtn:
                 finish();
                 System.exit(0);
@@ -249,8 +247,8 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
-
-                    // main logic
+                    //start camera
+                    cameraInitialization();
                 } else {
                     Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
