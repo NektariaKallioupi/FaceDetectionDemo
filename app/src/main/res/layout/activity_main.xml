@@ -9,48 +9,43 @@
 
     <androidx.camera.view.PreviewView
         android:id="@+id/cameraView"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.01" >
+        app:layout_constraintVertical_bias="0.01">
 
+        <com.nektariakallioupi.facedetectiondemo.GraphicOverlay
+            android:id="@+id/graphic_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
     </androidx.camera.view.PreviewView>
 
     <Button
         android:id="@+id/exitBtn"
-        android:layout_width="130dp"
-        android:layout_height="68dp"
+        android:layout_width="133dp"
+        android:layout_height="64dp"
         android:text="EXIT"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.163"
+        app:layout_constraintHorizontal_bias="0.136"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.975" />
+        app:layout_constraintVertical_bias="0.97" />
 
     <Button
         android:id="@+id/reverseBtn"
-        android:layout_width="116dp"
-        android:layout_height="69dp"
+        android:layout_width="127dp"
+        android:layout_height="64dp"
         android:text="reverse"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.871"
+        app:layout_constraintHorizontal_bias="0.858"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.975" />
-
-    <com.nektariakallioupi.facedetectiondemo.GraphicOverlay
-        android:id="@+id/graphic_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/cameraView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintVertical_bias="0.97" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

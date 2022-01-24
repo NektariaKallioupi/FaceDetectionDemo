@@ -44,17 +44,18 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class MainTab extends AppCompatActivity implements View.OnClickListener,ImageAnalysis.Analyzer{
+public class MainTab extends AppCompatActivity implements View.OnClickListener{
 
     private static final int PERMISSION_REQUEST_CODE = 200;
+
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture ;
     private   ProcessCameraProvider  cameraProvider;
-//    private CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
-    ImageAnalysis imageAnalysis;
+    private CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
+
     private Button exitBtn,reverseBtn;
     PreviewView cameraPreviewView;
 
-
+    ImageAnalysis imageAnalysis;
     private  InputImage mSelectedImage;
     private GraphicOverlay mGraphicOverlay;
 
@@ -65,20 +66,18 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
         Utils.hideSystemUI(getWindow().getDecorView());
 
         exitBtn =(Button) findViewById(R.id.exitBtn);
-        reverseBtn=(Button) findViewById(R.id.reverseBtn);
+        reverseBtn =(Button) findViewById(R.id.reverseBtn);
         cameraPreviewView = (PreviewView) findViewById(R.id.cameraView);
         mGraphicOverlay = findViewById(R.id.graphic_overlay);
 
-
         if (checkPermissions()){
-
+            cameraInitialization();
         } else {
             requestPermission();
         }
 
         exitBtn.setOnClickListener(this);
-     //  reverseBtn.setOnClickListener(this);
-
+        reverseBtn.setOnClickListener(this);
 
     }
 
@@ -86,8 +85,13 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
     public void onClick(View v) {
         Utils.preventTwoClick(v);
         switch (v.getId()) {
-//            case R.id.reverseBtn:
-//
+            case R.id.reverseBtn:
+                try {
+                    flipCamera();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                break;
             case R.id.exitBtn:
                 finish();
                 System.exit(0);
@@ -95,6 +99,17 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
         }
 
     }
+
+    private void flipCamera() throws InterruptedException {
+        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
+            lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
+        }
+        else if (lensFacing == CameraSelector.DEFAULT_BACK_CAMERA){
+            lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
+        }
+        bindPreview(cameraProvider);
+    }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -148,8 +163,6 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
         }
     }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private void cameraInitialization(){
@@ -166,60 +179,21 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener,I
             }
         }, ContextCompat.getMainExecutor(this));
 
-
     }
 
     private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
-
+        //Unbinds all use cases from the lifecycle and removes them from CameraX.
         cameraProvider.unbindAll();
 
-        //Camera Selector
-        CameraSelector cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
-                .build();
-
         //Preview Use Case
-
         Preview preview = new Preview.Builder().build();
 
         preview.setSurfaceProvider(cameraPreviewView.getSurfaceProvider());
 
-        //Image Analysis Use Case
-        ImageAnalysis imageAnalysis =
-                new ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build();
-
-
-//        imageAnalysis.setAnalyzer(Runnable::run , new ImageAnalysis.Analyzer() {
-//            @Override
-//            public void analyze(@NonNull ImageProxy imageProxy) {
-//                int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
-//
-//                @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
-//                if (mediaImage != null) {
-//                    InputImage image =
-//                            InputImage.fromMediaImage(mediaImage, rotationDegrees);
-//                    runFaceContourDetection(image);
-//                }
-//
-//                imageProxy.close();
-//            }
-//        });
-
-
-        cameraProvider.bindToLifecycle((LifecycleOwner)this,cameraSelector, preview,imageAnalysis);
-
+        cameraProvider.bindToLifecycle((LifecycleOwner)this,lensFacing, preview);
     }
 
-    @Override
-    public void analyze(@NonNull ImageProxy image) {
-
-        Log.i("here ", String.valueOf(image.getImageInfo().getTimestamp()));
-        image.close();
-    }
-
-//<-----------------------Permissions------------------->///////////////////////////////////////////////
+///////////////////////////////////////CameraPermissions/////////////////////////////////////////////////
 
     //check if permissions are granted or not
     private boolean checkPermissions() {
