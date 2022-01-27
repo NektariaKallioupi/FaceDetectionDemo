@@ -21,8 +21,9 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
   private static final float BOX_STROKE_WIDTH = 5.0f;
 
   private static final int[] COLOR_CHOICES = {
-    Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.RED, Color.WHITE, Color.YELLOW
+          Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.RED, Color.WHITE, Color.YELLOW
   };
+
   private static int currentColorIndex = 0;
 
   private final Paint facePositionPaint;
@@ -59,19 +60,19 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
     postInvalidate();
   }
 
-  /** Draws the face annotations for position on the supplied canvas. */
+  /**
+   * Draws the face annotations for position on the supplied canvas.
+   */
   @Override
   public void draw(Canvas canvas) {
+
     Face face = this.face;
     if (face == null) {
       return;
     }
 
-    // Draws a circle at the position of the detected face, with the face's track id below.
     float x = translateX(face.getBoundingBox().centerX());
     float y = translateY(face.getBoundingBox().centerY());
-    canvas.drawCircle(x, y, FACE_POSITION_RADIUS, facePositionPaint);
-    canvas.drawText("id: " + face.getTrackingId(), x + ID_X_OFFSET, y + ID_Y_OFFSET, idPaint);
 
     // Draws a bounding box around the face.
     float xOffset = scaleX(face.getBoundingBox().width() / 2.0f);
@@ -81,15 +82,6 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
     float right = x + xOffset;
     float bottom = y + yOffset;
     canvas.drawRect(left, top, right, bottom, boxPaint);
-
-    List<FaceContour> contour = face.getAllContours();
-    for (FaceContour faceContour : contour) {
-      for (PointF point : faceContour.getPoints()) {
-        float px = translateX(point.x);
-        float py = translateY(point.y);
-        canvas.drawCircle(px, py, FACE_POSITION_RADIUS, facePositionPaint);
-      }
-    }
 
   }
 }

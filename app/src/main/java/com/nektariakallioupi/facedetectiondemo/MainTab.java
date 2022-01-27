@@ -2,6 +2,7 @@ package com.nektariakallioupi.facedetectiondemo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,33 +45,36 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class MainTab extends AppCompatActivity implements View.OnClickListener{
+public class MainTab extends AppCompatActivity implements View.OnClickListener {
+
+    int numberOfFaces = 0;
 
     private static final int PERMISSION_REQUEST_CODE = 200;
 
-    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture ;
-    private   ProcessCameraProvider  cameraProvider;
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+    private ProcessCameraProvider cameraProvider;
     private CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
 
-    private Button exitBtn,reverseBtn;
+    private Button exitBtn, reverseBtn;
     PreviewView cameraPreviewView;
 
     ImageAnalysis imageAnalysis;
-    private  InputImage mSelectedImage;
+    private InputImage mSelectedImage;
     private GraphicOverlay mGraphicOverlay;
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Utils.hideSystemUI(getWindow().getDecorView());
 
-        exitBtn =(Button) findViewById(R.id.exitBtn);
-        reverseBtn =(Button) findViewById(R.id.reverseBtn);
+        exitBtn = (Button) findViewById(R.id.exitBtn);
+        reverseBtn = (Button) findViewById(R.id.reverseBtn);
         cameraPreviewView = (PreviewView) findViewById(R.id.cameraView);
         mGraphicOverlay = findViewById(R.id.graphic_overlay);
 
-        if (checkPermissions()){
+        if (checkPermissions()) {
             cameraInitialization();
         } else {
             requestPermission();
@@ -103,69 +107,16 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener{
     private void flipCamera() throws InterruptedException {
         if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
             lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
-        }
-        else if (lensFacing == CameraSelector.DEFAULT_BACK_CAMERA){
+        } else if (lensFacing == CameraSelector.DEFAULT_BACK_CAMERA) {
             lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
         }
         bindPreview(cameraProvider);
     }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private void runFaceContourDetection(InputImage image ) {
-
-        FaceDetectorOptions options =
-                new FaceDetectorOptions.Builder()
-                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-                        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
-                        .build();
-
-        FaceDetector detector = FaceDetection.getClient(options);
-
-
-
-        detector.process(image)
-                .addOnSuccessListener(
-                        new OnSuccessListener<List<Face>>() {
-                            @Override
-                            public void onSuccess(List<Face> faces) {
-
-                                processFaceContourDetectionResult(faces);
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Task failed with an exception
-
-                                e.printStackTrace();
-                            }
-                        });
-
-    }
-
-    private void processFaceContourDetectionResult(List<Face> faces) {
-        Log.i("Face ", "Found");
-
-        // Task completed successfully
-        if (faces.size() == 0) {
-            Toast.makeText(getApplicationContext(),"No face found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        mGraphicOverlay.clear();
-        for (int i = 0; i < faces.size(); ++i) {
-            Face face = faces.get(i);
-            FaceContourGraphic faceGraphic = new FaceContourGraphic(mGraphicOverlay);
-            mGraphicOverlay.add(faceGraphic);
-            faceGraphic.updateFace(face);
-        }
-    }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private void cameraInitialization(){
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    private void cameraInitialization() {
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
@@ -187,10 +138,87 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener{
 
         //Preview Use Case
         Preview preview = new Preview.Builder().build();
-
         preview.setSurfaceProvider(cameraPreviewView.getSurfaceProvider());
 
-        cameraProvider.bindToLifecycle((LifecycleOwner)this,lensFacing, preview);
+        //Image Analysis Use Case
+        //CameraX receives a new image before the application finishes processing, the new image is saved to the same buffer, overwriting the previous image
+        ImageAnalysis imageAnalysis =
+                new ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
+
+        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), new ImageAnalysis.Analyzer() {
+            @Override
+            public void analyze(@NonNull ImageProxy imageProxy) {
+
+                int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
+
+                @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
+                if (mediaImage != null) {
+                    InputImage image =
+                            InputImage.fromMediaImage(mediaImage, rotationDegrees);
+                    runFaceContourDetection(image);
+                }
+
+                imageProxy.close();
+            }
+        });
+
+        cameraProvider.bindToLifecycle((LifecycleOwner) this, lensFacing, imageAnalysis, preview);
+
+    }
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private void runFaceContourDetection(InputImage image) {
+
+        FaceDetectorOptions options =
+                new FaceDetectorOptions.Builder()
+                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+                        .build();
+
+        FaceDetector detector = FaceDetection.getClient(options);
+
+        detector.process(image)
+                .addOnSuccessListener(
+                        new OnSuccessListener<List<Face>>() {
+                            @Override
+                            public void onSuccess(List<Face> faces) {
+                                processFaceContourDetectionResult(faces);
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Task failed with an exception
+
+                                e.printStackTrace();
+                            }
+                        });
+
+    }
+
+    private void processFaceContourDetectionResult(List<Face> faces) {
+
+        // Task completed successfully
+        if (faces.size() == 0) {
+            Toast.makeText(getApplicationContext(), "No face found", Toast.LENGTH_SHORT).show();
+            return;
+        }else {
+            Log.i("Face", "Found");
+            numberOfFaces=numberOfFaces+1;
+            Toast.makeText(this,"Number of times a face was detected :"+numberOfFaces,Toast.LENGTH_LONG).show();
+
+            mGraphicOverlay.clear();
+            for (int i = 0; i < faces.size(); ++i) {
+                Face face = faces.get(i);
+                FaceContourGraphic faceGraphic = new FaceContourGraphic(mGraphicOverlay);
+                mGraphicOverlay.add(faceGraphic);
+                faceGraphic.updateFace(face);
+            }
+        }
     }
 
 ///////////////////////////////////////CameraPermissions/////////////////////////////////////////////////
@@ -214,6 +242,7 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener{
                 PERMISSION_REQUEST_CODE);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
