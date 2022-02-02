@@ -42,12 +42,13 @@ import java.util.Set;
  * </ol>
  */
 public class GraphicOverlay extends View {
+
     private final Object lock = new Object();
     private int previewWidth;
     private float widthScaleFactor = 1.0f;
     private int previewHeight;
     private float heightScaleFactor = 1.0f;
-    private int facing = CameraCharacteristics.LENS_FACING_BACK;
+    private int facing = CameraCharacteristics.LENS_FACING_FRONT;
     private Set<Graphic> graphics = new HashSet<>();
 
     /**
@@ -56,6 +57,7 @@ public class GraphicOverlay extends View {
      * instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
      */
     public abstract static class Graphic {
+
         private GraphicOverlay overlay;
 
         public Graphic(GraphicOverlay overlay) {
@@ -103,7 +105,7 @@ public class GraphicOverlay extends View {
          */
         public float translateX(float x) {
             if (overlay.facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                return overlay.getWidth() - scaleX(x);
+                return overlay.getWidth() - (scaleX(x));
             } else {
                 return scaleX(x);
             }
@@ -120,6 +122,8 @@ public class GraphicOverlay extends View {
             overlay.postInvalidate();
         }
     }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public GraphicOverlay(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -161,8 +165,10 @@ public class GraphicOverlay extends View {
      */
     public void setCameraInfo(int previewWidth, int previewHeight, int facing) {
         synchronized (lock) {
-            this.previewWidth = previewWidth;
-            this.previewHeight = previewHeight;
+            //we switch height and width because we have lock screenOrientation in portrait mode.
+            //camera's natural orientation is landscape.
+            this.previewWidth =  previewHeight;
+            this.previewHeight = previewWidth;
             this.facing = facing;
         }
         postInvalidate();
@@ -180,7 +186,6 @@ public class GraphicOverlay extends View {
                 widthScaleFactor = (float) canvas.getWidth() / (float) previewWidth;
                 heightScaleFactor = (float) canvas.getHeight() / (float) previewHeight;
             }
-
             for (Graphic graphic : graphics) {
                 graphic.draw(canvas);
             }

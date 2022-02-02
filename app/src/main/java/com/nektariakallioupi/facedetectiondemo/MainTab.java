@@ -1,5 +1,7 @@
 package com.nektariakallioupi.facedetectiondemo;
 
+import static androidx.camera.view.PreviewView.ScaleType.FILL_CENTER;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -32,8 +34,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
@@ -58,8 +62,6 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
     private Button exitBtn, reverseBtn;
     PreviewView cameraPreviewView;
 
-    ImageAnalysis imageAnalysis;
-    private InputImage mSelectedImage;
     private GraphicOverlay mGraphicOverlay;
 
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -72,7 +74,9 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
         exitBtn = (Button) findViewById(R.id.exitBtn);
         reverseBtn = (Button) findViewById(R.id.reverseBtn);
         cameraPreviewView = (PreviewView) findViewById(R.id.cameraView);
-        mGraphicOverlay = findViewById(R.id.graphic_overlay);
+        mGraphicOverlay = (GraphicOverlay) findViewById(R.id.graphic_overlay);
+
+        cameraPreviewView.setScaleType(FILL_CENTER);
 
         if (checkPermissions()) {
             cameraInitialization();
@@ -137,13 +141,16 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
         cameraProvider.unbindAll();
 
         //Preview Use Case
-        Preview preview = new Preview.Builder().build();
+        Preview preview = new Preview.Builder()
+                .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                .build();
         preview.setSurfaceProvider(cameraPreviewView.getSurfaceProvider());
 
         //Image Analysis Use Case
         //CameraX receives a new image before the application finishes processing, the new image is saved to the same buffer, overwriting the previous image
         ImageAnalysis imageAnalysis =
                 new ImageAnalysis.Builder()
+                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build();
 
@@ -155,12 +162,43 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
 
                 @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
                 if (mediaImage != null) {
-                    InputImage image =
-                            InputImage.fromMediaImage(mediaImage, rotationDegrees);
-                    runFaceContourDetection(image);
-                }
+                    InputImage image = InputImage.fromMediaImage(mediaImage, rotationDegrees);
 
-                imageProxy.close();
+                    FaceDetectorOptions options =
+                            new FaceDetectorOptions.Builder()
+                                    .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+                                    .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+                                    .build();
+
+                    FaceDetector detector = FaceDetection.getClient(options);
+
+                    detector.process(image)
+                            .addOnSuccessListener(
+                                    new OnSuccessListener<List<Face>>() {
+                                        @SuppressLint("RestrictedApi")
+                                        @Override
+                                        public void onSuccess(List<Face> faces) {
+                                            mGraphicOverlay.setCameraInfo(imageProxy.getWidth(),imageProxy.getHeight(),lensFacing.getLensFacing());
+                                            processFaceContourDetectionResult(faces);
+                                        }
+                                    })
+                            .addOnFailureListener(
+                                    new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            // Task failed with an exception
+
+                                            e.printStackTrace();
+                                        }
+                                    })
+                            .addOnCompleteListener(
+                                    new OnCompleteListener<List<Face>>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<List<Face>> task) {
+                                             imageProxy.close();
+                                        }
+                                    });
+                }
             }
         });
 
@@ -168,49 +206,17 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
 
     }
 
- ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private void runFaceContourDetection(InputImage image) {
-
-        FaceDetectorOptions options =
-                new FaceDetectorOptions.Builder()
-                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-                        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
-                        .build();
-
-        FaceDetector detector = FaceDetection.getClient(options);
-
-        detector.process(image)
-                .addOnSuccessListener(
-                        new OnSuccessListener<List<Face>>() {
-                            @Override
-                            public void onSuccess(List<Face> faces) {
-                                processFaceContourDetectionResult(faces);
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Task failed with an exception
-
-                                e.printStackTrace();
-                            }
-                        });
-
-    }
-
+    @SuppressLint("RestrictedApi")
     private void processFaceContourDetectionResult(List<Face> faces) {
 
         // Task completed successfully
         if (faces.size() == 0) {
-            Toast.makeText(getApplicationContext(), "No face found", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "No face found", Toast.LENGTH_SHORT).show();
+            mGraphicOverlay.clear();
             return;
-        }else {
-            Log.i("Face", "Found");
-            numberOfFaces=numberOfFaces+1;
-            Toast.makeText(this,"Number of times a face was detected :"+numberOfFaces,Toast.LENGTH_LONG).show();
-
+        } else {
             mGraphicOverlay.clear();
             for (int i = 0; i < faces.size(); ++i) {
                 Face face = faces.get(i);
@@ -220,7 +226,6 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
             }
         }
     }
-
 ///////////////////////////////////////CameraPermissions/////////////////////////////////////////////////
 
     //check if permissions are granted or not
