@@ -70,6 +70,14 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
         float y = translateY(face.getBoundingBox().centerY());
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, facePositionPaint);
 
+        //  Draws a bounding box around the face.
+        float left = translateX((float) face.getBoundingBox().left);
+        float top = translateY((float) face.getBoundingBox().top);
+        float right =  translateX((float) face.getBoundingBox().right);
+        float bottom =  translateY((float) face.getBoundingBox().bottom);
+        canvas.drawRect(left, top, right, bottom, boxPaint);
+
+        // Draws a dotted contour on the most prominent detected face.
         List<FaceContour> contour = face.getAllContours();
         for (FaceContour faceContour : contour) {
             for (PointF point : faceContour.getPoints()) {
