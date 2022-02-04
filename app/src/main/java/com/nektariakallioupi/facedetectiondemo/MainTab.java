@@ -168,6 +168,7 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
                             new FaceDetectorOptions.Builder()
                                     .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
                                     .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+                                    .enableTracking()
                                     .build();
 
                     FaceDetector detector = FaceDetection.getClient(options);

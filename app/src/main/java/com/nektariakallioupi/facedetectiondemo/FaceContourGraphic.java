@@ -20,6 +20,9 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
 
     private static final float FACE_POSITION_RADIUS = 10.0f;
     private static final float BOX_STROKE_WIDTH = 5.0f;
+    private static final float ID_TEXT_SIZE = 70.0f;
+    private static final float ID_Y_OFFSET = 500.0f;
+    private static final float ID_X_OFFSET = 300.0f;
 
     private static final int[] COLOR_CHOICES = {
             Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.RED, Color.WHITE, Color.YELLOW
@@ -27,6 +30,8 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
 
     private final Paint facePositionPaint;
     private final Paint boxPaint;
+    private final Paint idPaint;
+
     private static int currentColorIndex = 0;
     private volatile Face face;
 
@@ -40,9 +45,13 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
         facePositionPaint.setColor(selectedColor);
 
         boxPaint = new Paint();
-        boxPaint.setColor(selectedColor);
+        boxPaint.setColor(COLOR_CHOICES[5]);
         boxPaint.setStyle(Paint.Style.STROKE);
         boxPaint.setStrokeWidth(BOX_STROKE_WIDTH);
+
+        idPaint = new Paint();
+        idPaint.setColor(COLOR_CHOICES[5]);
+        idPaint.setTextSize(ID_TEXT_SIZE);
     }
 
     /**
@@ -65,10 +74,11 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
             return;
         }
 
-        //  Draws a circle at the position of the detected face, with the face's track id below.
+        //  Draws a circle at the position of the detected face,with the face's track id below.
         float x = translateX(face.getBoundingBox().centerX());
         float y = translateY(face.getBoundingBox().centerY());
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, facePositionPaint);
+        canvas.drawText("id: " + face.getTrackingId(), x + ID_X_OFFSET, y + ID_Y_OFFSET, idPaint);
 
         //  Draws a bounding box around the face.
         float left = translateX((float) face.getBoundingBox().left);
