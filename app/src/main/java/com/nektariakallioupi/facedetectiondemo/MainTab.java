@@ -51,8 +51,6 @@ import java.util.concurrent.TimeUnit;
 
 public class MainTab extends AppCompatActivity implements View.OnClickListener {
 
-    int numberOfFaces = 0;
-
     private static final int PERMISSION_REQUEST_CODE = 200;
 
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
