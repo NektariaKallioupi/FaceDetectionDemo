@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "167702396163",
+    "project_id": "face-detection-3c736",
+    "storage_bucket": "face-detection-3c736.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167702396163:android:9b9dca83ac3a954c7e7d36",
+        "android_client_info": {
+          "package_name": "com.nektariakallioupi.facedetectiondemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "167702396163-dgha4neegscdlraa3rk73m6lp856efae.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlcGsOu5tVQTO9cir3PeU6FrksYpWI0iU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "167702396163-dgha4neegscdlraa3rk73m6lp856efae.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:167702396163:android:6da93952125d2ddd7e7d36",
+        "android_client_info": {
+          "package_name": "com.nektariakallioupi.firebasedemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "167702396163-dgha4neegscdlraa3rk73m6lp856efae.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlcGsOu5tVQTO9cir3PeU6FrksYpWI0iU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "167702396163-dgha4neegscdlraa3rk73m6lp856efae.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

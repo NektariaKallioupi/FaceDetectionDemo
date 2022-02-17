@@ -3,7 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_loading_tab.xml" value="0.275" />
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_login.xml" value="0.275" />
         <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_sign_in.xml" value="0.275" />
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_sign_up.xml" value="0.275" />
       </map>
     </option>
   </component>

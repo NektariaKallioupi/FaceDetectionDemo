@@ -23,6 +23,7 @@ import androidx.lifecycle.LifecycleOwner;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
@@ -39,6 +40,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
@@ -57,10 +60,14 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
     private ProcessCameraProvider cameraProvider;
     private CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
 
-    private Button exitBtn, reverseBtn;
+    private Button exitBtn, reverseBtn,signOutBtn;
     PreviewView cameraPreviewView;
 
     private GraphicOverlay mGraphicOverlay;
+
+    //firebase instance
+    private FirebaseAuth mAuth;
+    FirebaseUser currentUser;
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
@@ -71,8 +78,10 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
 
         exitBtn = (Button) findViewById(R.id.exitBtn);
         reverseBtn = (Button) findViewById(R.id.reverseBtn);
+        signOutBtn = (Button) findViewById(R.id.signOutBtn);
         cameraPreviewView = (PreviewView) findViewById(R.id.cameraView);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.graphic_overlay);
+
 
         cameraPreviewView.setScaleType(FILL_CENTER);
 
@@ -84,6 +93,10 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
 
         exitBtn.setOnClickListener(this);
         reverseBtn.setOnClickListener(this);
+        signOutBtn.setOnClickListener(this);
+
+        //initializing the firebase instance
+        mAuth = FirebaseAuth.getInstance();
 
     }
 
@@ -102,6 +115,11 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
                 finish();
                 System.exit(0);
                 break;
+            case R.id.signOutBtn:
+                // user signed out
+                mAuth.signOut();
+                startActivity(new Intent(this, SignInActivity.class));
+                finish();
         }
 
     }
@@ -284,6 +302,12 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
                 .setNegativeButton("Cancel", null)
                 .create()
                 .show();
+    }
+
+    public void onBackPressed() {
+
+        finish();
+        System.exit(0);
     }
 
 }
