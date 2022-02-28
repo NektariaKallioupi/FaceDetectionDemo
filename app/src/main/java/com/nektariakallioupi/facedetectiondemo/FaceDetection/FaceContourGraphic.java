@@ -1,15 +1,12 @@
-package com.nektariakallioupi.facedetectiondemo;
+package com.nektariakallioupi.facedetectiondemo.FaceDetection;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.graphics.Rect;
-import android.util.Log;
 
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceContour;
-import com.google.mlkit.vision.face.FaceLandmark;
 
 import java.util.List;
 

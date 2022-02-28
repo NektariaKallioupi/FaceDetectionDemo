@@ -18,9 +18,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FaceDetectionDemo">
         <activity
+            android:name=".NewsFeed.ClickedNewsDetails"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+        <activity
+            android:name=".NewsFeed.NewsFeedActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".LoadingTab"
             android:exported="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,18 +36,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SignUpActivity"
+            android:name=".Authentication.SignUpActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".SignInActivity"
+            android:name=".Authentication.SignInActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".MainTab"
+            android:name=".FaceDetection.MainTab"
             android:exported="false"
             android:screenOrientation="portrait" />
-
     </application>
 
 </manifest>

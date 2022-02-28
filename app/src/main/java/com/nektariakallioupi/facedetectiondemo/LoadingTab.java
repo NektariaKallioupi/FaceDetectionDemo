@@ -7,6 +7,8 @@ import android.os.Bundle;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.nektariakallioupi.facedetectiondemo.Authentication.SignInActivity;
+import com.nektariakallioupi.facedetectiondemo.NewsFeed.NewsFeedActivity;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,17 +33,14 @@ public class LoadingTab extends AppCompatActivity {
             public void run() {
 
                 // this code will be executed after 2 seconds
-                // this code will be executed after 2 seconds
                 currentUser=mAuth.getCurrentUser();
 
 
                 //checks is a user has logged into the app or not
                 if (currentUser != null) {
                     // User is signed in
-                    //redirection to the sms page
-
-
-                    startActivity(new Intent(LoadingTab.this , MainTab.class));
+                    //redirection to the newsfeed activity
+                    startActivity(new Intent(LoadingTab.this , NewsFeedActivity.class));
                     finish();
 
 

@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo;
+package com.nektariakallioupi.facedetectiondemo.FaceDetection;
 
 import com.google.mlkit.vision.face.Face;
 

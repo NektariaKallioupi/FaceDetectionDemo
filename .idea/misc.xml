@@ -3,11 +3,15 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_clicked_news_details.xml" value="0.33" />
         <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_loading_tab.xml" value="0.275" />
         <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_login.xml" value="0.275" />
         <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_news_feed.xml" value="0.25" />
         <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_sign_in.xml" value="0.275" />
         <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/activity_sign_up.xml" value="0.275" />
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/custom_dialog.xml" value="0.25" />
+        <entry key="..\:/Users/Nektaria Kallioupi/AndroidStudioProjects/FaceDetectionDemo/app/src/main/res/layout/headline_list_items.xml" value="0.275" />
       </map>
     </option>
   </component>

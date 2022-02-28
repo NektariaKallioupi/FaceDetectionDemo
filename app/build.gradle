@@ -55,4 +55,11 @@ dependencies {
     implementation "androidx.camera:camera-view:1.0.0-alpha32"
     // If you want to additionally use the CameraX Extensions library
     implementation "androidx.camera:camera-extensions:1.0.0-alpha32"
+    //Picasso library for image handling -- https://github.com/square/picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    //Retrofit library for handling/managing requests -- https://github.com/square/retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    //Gson Converter which uses Gson for serialization to and from JSON.-
+    //Responsible to turn the response we get from the server to java objects and vise-versa
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 }

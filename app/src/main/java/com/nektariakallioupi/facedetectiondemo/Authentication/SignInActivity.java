@@ -1,10 +1,11 @@
-package com.nektariakallioupi.facedetectiondemo;
+package com.nektariakallioupi.facedetectiondemo.Authentication;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +18,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.nektariakallioupi.facedetectiondemo.NewsFeed.NewsFeedActivity;
+import com.nektariakallioupi.facedetectiondemo.R;
+import com.nektariakallioupi.facedetectiondemo.Utils;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -77,12 +81,16 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         if (givenEmail.isEmpty()) {
             email.setError("Should not be empty");
             email.requestFocus();
+            email.getText().clear();
+            password.getText().clear();
             return;
         }
 
         if (givenPassword.isEmpty()) {
             password.setError("Should not be empty");
             password.requestFocus();
+            email.getText().clear();
+            password.getText().clear();
             return;
         }
 
@@ -90,6 +98,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             email.setError("Please provide a valid email");
             email.getText().clear();
             email.requestFocus();
+            email.getText().clear();
+            password.getText().clear();
             return;
         }
 
@@ -109,8 +119,9 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                         } else {
 
                             // If sign in fails, display a message to the user.
-                            Toast.makeText(getApplicationContext(),
-                                    task.getException().getMessage(), Toast.LENGTH_LONG)
+                            Log.i("Exception", task.getException().getMessage());
+                            Toast.makeText(getApplicationContext(),"Email or Password incorrect!Please try again"
+                                    , Toast.LENGTH_LONG)
                                     .show();
                             email.getText().clear();
                             password.getText().clear();
@@ -125,7 +136,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
         if(user!=null) {
 
-            startActivity(new Intent(this, MainTab.class));
+            startActivity(new Intent(this, NewsFeedActivity.class));
             finish();
 
         }else{
