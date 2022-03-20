@@ -18,9 +18,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FaceDetectionDemo">
         <activity
-            android:name=".NewsFeed.ClickedNewsDetails"
-            android:screenOrientation="portrait"
+            android:name=".Authentication.AccountActivity"
             android:exported="false" />
+        <activity
+            android:name=".NewsFeed.ClickedNewsDetails"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".NewsFeed.NewsFeedActivity"
             android:exported="false"
@@ -28,7 +31,7 @@
         <activity
             android:name=".LoadingTab"
             android:exported="true"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,7 +47,7 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".FaceDetection.MainTab"
+            android:name=".FaceDetection.LiveFaceDetection"
             android:exported="false"
             android:screenOrientation="portrait" />
     </application>

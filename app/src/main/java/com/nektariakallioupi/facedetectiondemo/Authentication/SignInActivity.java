@@ -155,4 +155,15 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         System.exit(0);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Utils.hideSystemUI(getWindow().getDecorView());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Utils.hideSystemUI(getWindow().getDecorView());
+    }
 }

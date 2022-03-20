@@ -7,18 +7,6 @@
     android:background="#DCD6D6"
     >
 
-    <Button
-        android:id="@+id/signOutBtn"
-        android:layout_width="131dp"
-        android:layout_height="58dp"
-        android:text="Sign Out"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.858"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.852" />
-
     <androidx.camera.view.PreviewView
         android:id="@+id/cameraView"
         android:layout_width="0dp"
@@ -33,25 +21,15 @@
     </androidx.camera.view.PreviewView>
 
     <Button
-        android:id="@+id/exitBtn"
+        android:id="@+id/faceDetectionBackBtn"
         android:layout_width="133dp"
         android:layout_height="64dp"
-        android:text="EXIT"
+        android:backgroundTint="#EC8752"
+        android:text="Back"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.136"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.97" />
-
-    <Button
-        android:id="@+id/reverseBtn"
-        android:layout_width="127dp"
-        android:layout_height="64dp"
-        android:text="reverse"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.858"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.97" />

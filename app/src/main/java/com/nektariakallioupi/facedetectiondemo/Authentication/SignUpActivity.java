@@ -18,6 +18,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.nektariakallioupi.facedetectiondemo.R;
 import com.nektariakallioupi.facedetectiondemo.Utils;
 
@@ -29,7 +31,12 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
     //firebase instance
     private FirebaseAuth mAuth;
+
+    //current user
     FirebaseUser currentUser;
+
+    //database reference
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +44,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_sign_up);
         Utils.hideSystemUI(getWindow().getDecorView());
 
-//        username = (EditText) findViewById(R.id.signUpUsernameEditText);
+        username = (EditText) findViewById(R.id.signUpUsernameEditText);
         password = (EditText) findViewById(R.id.signUpPasswordEditText);
         email = (EditText) findViewById(R.id.signUpEmailEditText);
 
@@ -53,6 +60,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         //initializing the firebase instance
         mAuth = FirebaseAuth.getInstance();
 
+        //Obtaining the Database Reference
+        database = FirebaseDatabase.getInstance().getReference("users");
+
     }
 
     @Override
@@ -60,7 +70,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         Utils.preventTwoClick(v);
         switch (v.getId()) {
             case R.id.signUpBtn:
-                  signUpUser();
+                signUpUser();
                 break;
             case R.id.exitSignUpBtn:
                 finish();
@@ -77,7 +87,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
         String givenEmail = email.getText().toString();
         String givenPassword = password.getText().toString();
-      //  String givenUsername = username.getText().toString();
+        String givenUsername = username.getText().toString();
 
         if (givenEmail.isEmpty()) {
             email.setError("Should not be empty");
@@ -91,11 +101,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             return;
         }
 
-//        if (givenUsername.isEmpty()) {
-//            username.setError("Should not be empty");
-//            username.requestFocus();
-//            return;
-//        }
+        if (givenUsername.isEmpty()) {
+            username.setError("Should not be empty");
+            username.requestFocus();
+            return;
+        }
 
         if (!(Patterns.EMAIL_ADDRESS.matcher(givenEmail).matches())) {
             email.setError("Please provide a valid email");
@@ -104,7 +114,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             return;
         }
 
-        mAuth.createUserWithEmailAndPassword(givenEmail,givenPassword)
+        mAuth.createUserWithEmailAndPassword(givenEmail, givenPassword)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -112,7 +122,15 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                         if (task.isSuccessful()) {
                             Toast.makeText(getApplicationContext(), "Congratulations your account has been successfully created!",
                                     Toast.LENGTH_LONG).show();
+
+                            //get current user
                             currentUser = mAuth.getCurrentUser();
+
+                            // creating user object
+                            UserInfo user = new UserInfo(givenUsername);
+
+                            // pushing user to 'users' node using the userId
+                            database.child(currentUser.getUid()).setValue(user);
 
                             // user signed out in order to sign in again
                             mAuth.signOut();
@@ -122,7 +140,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                         } else {
 
                             // If sign up fails, display a message to the user.
-                            Log.e("SignUp",task.getException().getMessage());
+                            Log.e("SignUp", task.getException().getMessage());
                             Toast.makeText(getApplicationContext(), "Something went wrong!Please try again.",
                                     Toast.LENGTH_LONG).show();
                             username.getText().clear();
@@ -140,6 +158,18 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
         startActivity(new Intent(this, SignInActivity.class));
         finish();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Utils.hideSystemUI(getWindow().getDecorView());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Utils.hideSystemUI(getWindow().getDecorView());
     }
 
 }

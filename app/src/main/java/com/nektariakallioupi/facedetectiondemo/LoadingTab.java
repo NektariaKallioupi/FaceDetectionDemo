@@ -53,7 +53,7 @@ public class LoadingTab extends AppCompatActivity {
 
                 // finish();
             }
-        }, 2000);
+        }, 3000);
 
     }
 

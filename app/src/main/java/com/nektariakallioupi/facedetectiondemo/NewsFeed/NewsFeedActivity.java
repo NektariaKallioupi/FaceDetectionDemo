@@ -1,24 +1,65 @@
 package com.nektariakallioupi.facedetectiondemo.NewsFeed;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.camera.core.AspectRatio;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageProxy;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.media.Image;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
+import com.nektariakallioupi.facedetectiondemo.Authentication.AccountActivity;
+import com.nektariakallioupi.facedetectiondemo.FaceDetection.FaceContourGraphic;
+import com.nektariakallioupi.facedetectiondemo.FaceDetection.FaceUtils;
 import com.nektariakallioupi.facedetectiondemo.LoadingDialog;
+import com.nektariakallioupi.facedetectiondemo.LoadingTab;
 import com.nektariakallioupi.facedetectiondemo.Models.NewsApiResponse;
 import com.nektariakallioupi.facedetectiondemo.Models.NewsHeadlines;
 import com.nektariakallioupi.facedetectiondemo.R;
 import com.nektariakallioupi.facedetectiondemo.Utils;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class NewsFeedActivity extends AppCompatActivity implements SelectNewsListener, View.OnClickListener {
 
@@ -33,6 +74,27 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
 
     private SearchView searchBarSearchView;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private String category;
+
+    private static final int PERMISSION_REQUEST_CODE = 200;
+
+    //firebase instance
+    private FirebaseAuth mAuth;
+
+    //current user
+    FirebaseUser currentUser;
+
+    //database reference
+    private DatabaseReference database;
+
+    //Face Detection Variables
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+    private ProcessCameraProvider cameraProvider;
+    private CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +111,7 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
         exitBtn = (Button) findViewById(R.id.exitNewsBtn);
         accountBtn = (Button) findViewById(R.id.accountBtn);
         searchBarSearchView = (SearchView) findViewById(R.id.searchBarSearchView);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
 
         businessBtn.setOnClickListener(this);
         entertainmentBtn.setOnClickListener(this);
@@ -60,15 +123,20 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
         exitBtn.setOnClickListener(this);
         accountBtn.setOnClickListener(this);
 
+        //initializing the firebase instance
+        mAuth = FirebaseAuth.getInstance();
+        //Obtaining the Database Reference
+        database = FirebaseDatabase.getInstance().getReference("UserStats");
+
+        //default category -> general
+        category = "general";
+
         //on search
         searchBarSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchBarSearchView.clearFocus();
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(NewsFeedActivity.this);
-                manager.getNewsHeadlines(listener, "general", query);
-                manageBtnColours("general");
+                fetchNewsPerCategory("general", query);
                 return true;
             }
 
@@ -78,14 +146,43 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
             }
         });
 
-        //show loading bar while fetching data
-        loadingDialog = new LoadingDialog(this);
-        loadingDialog.startLoadingDialog();
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                fetchNewsPerCategory(category, null);
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
 
+        //initialize loading bar
+        loadingDialog = new LoadingDialog(this);
+
+        fetchNewsPerCategory(category, null);
+
+        //check camera permissions and request them if they are not given
+        if (checkPermissions()) {
+            cameraInitialization();
+        } else {
+            requestPermission();
+        }
+    }
+
+    public void fetchNewsPerCategory(String category, String query) {
+
+        //show loading bar while fetching data
+        loadingDialog.startLoadingDialog();
+        //request data
         manager = new RequestsManager(this);
-        //default category -> general
-        manager.getNewsHeadlines(listener, "general", null);
-        manageBtnColours("general");
+        manager.getNewsHeadlines(listener, category, query);
+
+        //search Bar gets initialized if another category is clicked
+        if ((query == null)) {
+            //empty searchBar
+            searchBarSearchView.setQuery("", false);
+            searchBarSearchView.clearFocus();
+        }
+
+        manageBtnColours(category);
     }
 
     @Override
@@ -93,52 +190,39 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
         Utils.preventTwoClick(v);
         switch (v.getId()) {
             case R.id.businessBtn:
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(this);
-                manager.getNewsHeadlines(listener, "business", null);
-                manageBtnColours("business");
+                category = "business";
+                fetchNewsPerCategory(category, null);
                 break;
             case R.id.entertainmentBtn:
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(this);
-                manager.getNewsHeadlines(listener, "entertainment", null);
-                manageBtnColours("entertainment");
+                category = "entertainment";
+                fetchNewsPerCategory(category, null);
                 break;
             case R.id.generalBtn:
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(this);
-                manager.getNewsHeadlines(listener, "general", null);
-                manageBtnColours("general");
+                category = "general";
+                fetchNewsPerCategory(category, null);
                 break;
             case R.id.healthBtn:
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(this);
-                manager.getNewsHeadlines(listener, "health", null);
-                manageBtnColours("health");
+                category = "health";
+                fetchNewsPerCategory(category, null);
                 break;
             case R.id.scienceBtn:
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(this);
-                manager.getNewsHeadlines(listener, "science", null);
-                manageBtnColours("science");
+                category = "science";
+                fetchNewsPerCategory(category, null);
                 break;
             case R.id.sportsBtn:
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(this);
-                manager.getNewsHeadlines(listener, "sports", null);
-                manageBtnColours("sports");
+                category = "sports";
+                fetchNewsPerCategory(category, null);
                 break;
             case R.id.technologyBtn:
-                loadingDialog.startLoadingDialog();
-                manager = new RequestsManager(this);
-                manager.getNewsHeadlines(listener, "technology", null);
-                manageBtnColours("technology");
+                category = "technology";
+                fetchNewsPerCategory(category, null);
                 break;
             case R.id.exitNewsBtn:
                 finish();
                 break;
             case R.id.accountBtn:
-
+                startActivity(new Intent(this, AccountActivity.class));
+                finish();
                 break;
         }
 
@@ -178,6 +262,7 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
             if (list.isEmpty()) {
                 //dismiss loading bar when data fetched
                 loadingDialog.dismissDialog();
+                //empty searchBar
                 searchBarSearchView.setQuery("", false);
                 searchBarSearchView.clearFocus();
                 Toast.makeText(NewsFeedActivity.this, "No data found!", Toast.LENGTH_LONG).show();
@@ -208,6 +293,7 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
     @Override
     public void OnNewsClicked(NewsHeadlines headlines) {
         startActivity(new Intent(this, ClickedNewsDetails.class).putExtra("data", headlines));
+        finish();
     }
 
     @Override
@@ -221,4 +307,184 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
         super.onPause();
         Utils.hideSystemUI(getWindow().getDecorView());
     }
+
+//////////////////////////////////////////Face Detection Methods/////////////////////////////////////////////
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    private void cameraInitialization() {
+
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+
+        cameraProviderFuture.addListener(() -> {
+            try {
+                cameraProvider = cameraProviderFuture.get();
+                bindPreview(cameraProvider);
+            } catch (ExecutionException | InterruptedException e) {
+                // No errors need to be handled for this Future.
+                // This should never be reached.
+            }
+        }, ContextCompat.getMainExecutor(this));
+
+    }
+
+    private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+        //Unbinds all use cases from the lifecycle and removes them from CameraX.
+        cameraProvider.unbindAll();
+
+        //Image Analysis Use Case
+        //CameraX receives a new image before the application finishes processing, the new image is saved to the same buffer, overwriting the previous image
+        ImageAnalysis imageAnalysis =
+                new ImageAnalysis.Builder()
+                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
+
+        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), new ImageAnalysis.Analyzer() {
+            @Override
+            public void analyze(@NonNull ImageProxy imageProxy) {
+
+                int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
+
+                @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
+                if (mediaImage != null) {
+                    InputImage image = InputImage.fromMediaImage(mediaImage, rotationDegrees);
+
+                    FaceDetectorOptions options =
+                            new FaceDetectorOptions.Builder()
+                                    .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+                                    .enableTracking()
+                                    .build();
+
+                    FaceDetector detector = FaceDetection.getClient(options);
+
+                    detector.process(image)
+                            .addOnSuccessListener(
+                                    new OnSuccessListener<List<Face>>() {
+                                        @SuppressLint("RestrictedApi")
+                                        @Override
+                                        public void onSuccess(List<Face> faces) {
+                                            processFaceContourDetectionResult(faces);
+                                        }
+                                    })
+                            .addOnFailureListener(
+                                    new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            // Task failed with an exception
+
+                                            e.printStackTrace();
+                                        }
+                                    })
+                            .addOnCompleteListener(
+                                    new OnCompleteListener<List<Face>>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<List<Face>> task) {
+                                            imageProxy.close();
+                                        }
+                                    });
+                }
+            }
+        });
+
+        cameraProvider.bindToLifecycle((LifecycleOwner) this, lensFacing, imageAnalysis);
+
+    }
+
+    @SuppressLint("RestrictedApi")
+    private void processFaceContourDetectionResult(List<Face> faces) {
+
+        // Task completed successfully
+        if (faces.size() == 0) {
+            //no face was detected
+            return;
+        } else {
+            for (int i = 0; i < faces.size(); ++i) {
+                Face face = faces.get(i);
+
+                FaceUtils faceUtils = new FaceUtils(face);
+
+                String axeXFacing = faceUtils.checkAxeXFacing();
+                String axeYFacing = faceUtils.checkAxeYFacing();
+
+                float rotX = face.getHeadEulerAngleX();
+                float rotY = face.getHeadEulerAngleY();
+                float rotZ = face.getHeadEulerAngleZ();
+
+//                //get current user
+//                currentUser = mAuth.getCurrentUser();
+//
+//                String frame = database.push().getKey();
+//
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotX").setValue(rotX);
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotY").setValue(rotY);
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotZ").setValue(rotZ);
+//
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("axeXFacing").setValue(axeXFacing);
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("axeYFacing").setValue(axeYFacing);
+
+            }
+        }
+    }
+
+//////////////////////////////////////////CameraPermissions/////////////////////////////////////////////////
+
+    //check if permissions are granted or not
+    private boolean checkPermissions() {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            return false;
+        }
+        return true;
+    }
+
+    //requesting camera permission
+    private void requestPermission() {
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.CAMERA},
+                PERMISSION_REQUEST_CODE);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
+                    //start camera
+                    cameraInitialization();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            showMessageOKCancel("You need to allow access permissions",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                requestPermission();
+                                            }
+                                        }
+                                    });
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(this)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
+
 }

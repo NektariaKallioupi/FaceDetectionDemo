@@ -36,19 +36,21 @@ import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
+import com.nektariakallioupi.facedetectiondemo.Authentication.AccountActivity;
 import com.nektariakallioupi.facedetectiondemo.R;
-import com.nektariakallioupi.facedetectiondemo.Authentication.SignInActivity;
 import com.nektariakallioupi.facedetectiondemo.Utils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class MainTab extends AppCompatActivity implements View.OnClickListener {
+public class LiveFaceDetection extends AppCompatActivity implements View.OnClickListener {
 
     private static final int PERMISSION_REQUEST_CODE = 200;
 
@@ -56,7 +58,7 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
     private ProcessCameraProvider cameraProvider;
     private CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
 
-    private Button exitBtn, reverseBtn,signOutBtn;
+    private Button exitBtn;
     PreviewView cameraPreviewView;
 
     private GraphicOverlay mGraphicOverlay;
@@ -65,16 +67,17 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
     private FirebaseAuth mAuth;
     FirebaseUser currentUser;
 
+    //database reference
+    private DatabaseReference database;
+
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_live_face_detection);
         Utils.hideSystemUI(getWindow().getDecorView());
 
-        exitBtn = (Button) findViewById(R.id.exitBtn);
-        reverseBtn = (Button) findViewById(R.id.reverseBtn);
-        signOutBtn = (Button) findViewById(R.id.signOutBtn);
+        exitBtn = (Button) findViewById(R.id.faceDetectionBackBtn);
         cameraPreviewView = (PreviewView) findViewById(R.id.cameraView);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.graphic_overlay);
 
@@ -88,11 +91,11 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
         }
 
         exitBtn.setOnClickListener(this);
-        reverseBtn.setOnClickListener(this);
-        signOutBtn.setOnClickListener(this);
 
         //initializing the firebase instance
         mAuth = FirebaseAuth.getInstance();
+        //Obtaining the Database Reference
+        database = FirebaseDatabase.getInstance().getReference();
 
     }
 
@@ -100,22 +103,10 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View v) {
         Utils.preventTwoClick(v);
         switch (v.getId()) {
-            case R.id.reverseBtn:
-                try {
-                    flipCamera();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case R.id.exitBtn:
+            case R.id.faceDetectionBackBtn:
+                startActivity(new Intent(this , AccountActivity.class));
                 finish();
-                System.exit(0);
                 break;
-            case R.id.signOutBtn:
-                // user signed out
-                mAuth.signOut();
-                startActivity(new Intent(this, SignInActivity.class));
-                finish();
         }
 
     }
@@ -226,7 +217,7 @@ public class MainTab extends AppCompatActivity implements View.OnClickListener {
 
         // Task completed successfully
         if (faces.size() == 0) {
-            //Toast.makeText(getApplicationContext(), "No face found", Toast.LENGTH_SHORT).show();
+            //no face was detected
             mGraphicOverlay.clear();
             return;
         } else {

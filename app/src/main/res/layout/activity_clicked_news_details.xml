@@ -4,18 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@drawable/clickednewsbckg"
     android:orientation="vertical"
     tools:context=".NewsFeed.ClickedNewsDetails">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00FFFFFF">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
+            android:background="#00FFFFFF"
             android:orientation="vertical">
 
             <LinearLayout
@@ -81,12 +82,27 @@
 
                 <Button
                     android:id="@+id/readMoreBtn"
-                    android:layout_width="wrap_content"
+                    android:layout_width="187dp"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="#00BCD4"
                     android:layout_marginTop="8dp"
-                    android:text="Read More"
+                    android:backgroundTint="#00BCD4"
+                    android:text="View Full Coverage"
                     android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/clickedNewsBackBtn"
+                    android:layout_width="100dp"
+                    android:layout_height="58dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="#EC8752"
+                    android:text="BACK"
+                    app:iconTint="@color/white"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0" />
             </LinearLayout>
 
         </LinearLayout>
