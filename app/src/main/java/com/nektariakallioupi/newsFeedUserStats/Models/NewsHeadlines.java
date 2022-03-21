@@ -1,7 +1,6 @@
-package com.nektariakallioupi.facedetectiondemo.Models;
+package com.nektariakallioupi.newsFeedUserStats.Models;
 
 import java.io.Serializable;
-import java.security.SecureRandom;
 
 public class NewsHeadlines implements Serializable {
 

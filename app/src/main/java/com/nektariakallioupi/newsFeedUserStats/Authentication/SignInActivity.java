@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.Authentication;
+package com.nektariakallioupi.newsFeedUserStats.Authentication;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,9 +18,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.nektariakallioupi.facedetectiondemo.NewsFeed.NewsFeedActivity;
-import com.nektariakallioupi.facedetectiondemo.R;
-import com.nektariakallioupi.facedetectiondemo.Utils;
+import com.nektariakallioupi.newsFeedUserStats.NewsFeed.NewsFeedActivity;
+import com.nektariakallioupi.newsFeedUserStats.R;
+import com.nektariakallioupi.newsFeedUserStats.Utils;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener {
 

@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.NewsFeed;
+package com.nektariakallioupi.newsFeedUserStats.NewsFeed;
 
 import android.view.View;
 import android.widget.ImageView;
@@ -9,7 +9,7 @@ import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.nektariakallioupi.facedetectiondemo.R;
+import com.nektariakallioupi.newsFeedUserStats.R;
 
 public class CustomViewHolder extends RecyclerView.ViewHolder {
 

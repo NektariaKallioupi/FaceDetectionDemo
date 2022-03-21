@@ -1,6 +1,6 @@
-package com.nektariakallioupi.facedetectiondemo.NewsFeed;
+package com.nektariakallioupi.newsFeedUserStats.NewsFeed;
 
-import com.nektariakallioupi.facedetectiondemo.Models.NewsHeadlines;
+import com.nektariakallioupi.newsFeedUserStats.Models.NewsHeadlines;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.Authentication;
+package com.nektariakallioupi.newsFeedUserStats.Authentication;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,11 +12,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.nektariakallioupi.facedetectiondemo.FaceDetection.LiveFaceDetection;
-import com.nektariakallioupi.facedetectiondemo.LoadingTab;
-import com.nektariakallioupi.facedetectiondemo.NewsFeed.NewsFeedActivity;
-import com.nektariakallioupi.facedetectiondemo.R;
-import com.nektariakallioupi.facedetectiondemo.Utils;
+import com.nektariakallioupi.newsFeedUserStats.FaceDetection.LiveFaceDetection;
+import com.nektariakallioupi.newsFeedUserStats.NewsFeed.NewsFeedActivity;
+import com.nektariakallioupi.newsFeedUserStats.R;
+import com.nektariakallioupi.newsFeedUserStats.Utils;
 
 import android.content.Intent;
 import android.os.Bundle;

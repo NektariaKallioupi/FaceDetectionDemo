@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo;
+package com.nektariakallioupi.newsFeedUserStats;
 
 import android.app.Activity;
 import android.app.AlertDialog;

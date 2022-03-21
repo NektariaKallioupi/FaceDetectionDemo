@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.NewsFeed;
+package com.nektariakallioupi.newsFeedUserStats.NewsFeed;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,10 +8,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.nektariakallioupi.facedetectiondemo.Models.NewsHeadlines;
-import com.nektariakallioupi.facedetectiondemo.NewsFeed.CustomViewHolder;
-import com.nektariakallioupi.facedetectiondemo.NewsFeed.SelectNewsListener;
-import com.nektariakallioupi.facedetectiondemo.R;
+import com.nektariakallioupi.newsFeedUserStats.Models.NewsHeadlines;
+import com.nektariakallioupi.newsFeedUserStats.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

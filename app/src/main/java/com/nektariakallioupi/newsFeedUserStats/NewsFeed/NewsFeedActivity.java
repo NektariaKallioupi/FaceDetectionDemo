@@ -1,15 +1,10 @@
-package com.nektariakallioupi.facedetectiondemo.NewsFeed;
-
-import static android.content.Intent.ACTION_VIEW;
-import static android.content.Intent.CATEGORY_BROWSABLE;
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static android.content.Intent.FLAG_ACTIVITY_REQUIRE_DEFAULT;
-import static android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER;
+package com.nektariakallioupi.newsFeedUserStats.NewsFeed;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -18,21 +13,21 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.media.Image;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -49,22 +44,33 @@ import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
-import com.nektariakallioupi.facedetectiondemo.FaceDetection.FaceUtils;
-import com.nektariakallioupi.facedetectiondemo.Models.NewsHeadlines;
-import com.nektariakallioupi.facedetectiondemo.R;
-import com.nektariakallioupi.facedetectiondemo.Utils;
-import com.squareup.picasso.Picasso;
+import com.nektariakallioupi.newsFeedUserStats.Authentication.AccountActivity;
+import com.nektariakallioupi.newsFeedUserStats.FaceDetection.FaceUtils;
+import com.nektariakallioupi.newsFeedUserStats.LoadingDialog;
+import com.nektariakallioupi.newsFeedUserStats.Models.NewsApiResponse;
+import com.nektariakallioupi.newsFeedUserStats.Models.NewsHeadlines;
+import com.nektariakallioupi.newsFeedUserStats.R;
+import com.nektariakallioupi.newsFeedUserStats.Utils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ClickedNewsDetails extends AppCompatActivity implements View.OnClickListener {
-    NewsHeadlines headlines;
+public class NewsFeedActivity extends AppCompatActivity implements SelectNewsListener, View.OnClickListener {
 
-    TextView newsTitle, author, timeOfPublishing, newsDetails, newsContent;
-    ImageView imageNewsImage;
+    private LoadingDialog loadingDialog;
 
-    Button readMoreBtn,clickedNewsBackBtn;
+    private RecyclerView recyclerView;
+    private CustomAdapter adapter;
+
+    private RequestsManager manager;
+
+    private Button businessBtn, entertainmentBtn, generalBtn, healthBtn, scienceBtn, sportsBtn, technologyBtn, exitBtn, accountBtn;
+
+    private SearchView searchBarSearchView;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private String category;
 
     private static final int PERMISSION_REQUEST_CODE = 200;
 
@@ -86,72 +92,201 @@ public class ClickedNewsDetails extends AppCompatActivity implements View.OnClic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_clicked_news_details);
+        setContentView(R.layout.activity_news_feed);
         Utils.hideSystemUI(getWindow().getDecorView());
 
-        newsTitle = (TextView) findViewById(R.id.newsTitleTextView);
-        author = (TextView) findViewById(R.id.authorTextView);
-        timeOfPublishing = (TextView) findViewById(R.id.timeOfPublishingTextView);
-        newsDetails = (TextView) findViewById(R.id.newsDetailsTextView);
-        newsContent = (TextView) findViewById(R.id.newsContentTextView);
-        imageNewsImage = (ImageView) findViewById(R.id.imageNewsImageView);
-        readMoreBtn = (Button) findViewById(R.id.readMoreBtn);
-        clickedNewsBackBtn = (Button) findViewById(R.id.clickedNewsBackBtn);
+        businessBtn = (Button) findViewById(R.id.businessBtn);
+        entertainmentBtn = (Button) findViewById(R.id.entertainmentBtn);
+        generalBtn = (Button) findViewById(R.id.generalBtn);
+        healthBtn = (Button) findViewById(R.id.healthBtn);
+        scienceBtn = (Button) findViewById(R.id.scienceBtn);
+        sportsBtn = (Button) findViewById(R.id.sportsBtn);
+        technologyBtn = (Button) findViewById(R.id.technologyBtn);
+        exitBtn = (Button) findViewById(R.id.exitNewsBtn);
+        accountBtn = (Button) findViewById(R.id.accountBtn);
+        searchBarSearchView = (SearchView) findViewById(R.id.searchBarSearchView);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
 
-        readMoreBtn.setOnClickListener(this);
-        clickedNewsBackBtn.setOnClickListener(this);
-
-        headlines = (NewsHeadlines) getIntent().getSerializableExtra("data");
+        businessBtn.setOnClickListener(this);
+        entertainmentBtn.setOnClickListener(this);
+        generalBtn.setOnClickListener(this);
+        healthBtn.setOnClickListener(this);
+        scienceBtn.setOnClickListener(this);
+        sportsBtn.setOnClickListener(this);
+        technologyBtn.setOnClickListener(this);
+        exitBtn.setOnClickListener(this);
+        accountBtn.setOnClickListener(this);
 
         //initializing the firebase instance
         mAuth = FirebaseAuth.getInstance();
-
-        //get current user
-        currentUser = mAuth.getCurrentUser();
-
         //Obtaining the Database Reference
-        database = FirebaseDatabase.getInstance().getReference("UserStatsClickedArticles").child(currentUser.getUid()).child(headlines.getTitle());
+        database = FirebaseDatabase.getInstance().getReference("UserStats");
+
+        //default category -> general
+        category = "general";
+
+        //on search
+        searchBarSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchBarSearchView.clearFocus();
+                fetchNewsPerCategory("general", query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                fetchNewsPerCategory(category, null);
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        //initialize loading bar
+        loadingDialog = new LoadingDialog(this);
+
+        fetchNewsPerCategory(category, null);
 
         //check camera permissions and request them if they are not given
         if (checkPermissions()) {
             cameraInitialization();
-       } else {
+        } else {
             requestPermission();
         }
+    }
 
-        initializeElements();
+    public void fetchNewsPerCategory(String category, String query) {
 
+        //show loading bar while fetching data
+        loadingDialog.startLoadingDialog();
+        //request data
+        manager = new RequestsManager(this);
+        manager.getNewsHeadlines(listener, category, query);
+
+        //search Bar gets initialized if another category is clicked
+        if ((query == null)) {
+            //empty searchBar
+            searchBarSearchView.setQuery("", false);
+            searchBarSearchView.clearFocus();
+        }
+
+        manageBtnColours(category);
     }
 
     @Override
     public void onClick(View v) {
         Utils.preventTwoClick(v);
         switch (v.getId()) {
-            case R.id.readMoreBtn:
-
-                Intent defaultBrowser = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_BROWSER);
-                defaultBrowser.setData(Uri.parse(headlines.getUrl()));
-                startActivity(defaultBrowser);
+            case R.id.businessBtn:
+                category = "business";
+                fetchNewsPerCategory(category, null);
                 break;
-            case  R.id.clickedNewsBackBtn:
-                startActivity(new Intent(this, NewsFeedActivity.class));
+            case R.id.entertainmentBtn:
+                category = "entertainment";
+                fetchNewsPerCategory(category, null);
+                break;
+            case R.id.generalBtn:
+                category = "general";
+                fetchNewsPerCategory(category, null);
+                break;
+            case R.id.healthBtn:
+                category = "health";
+                fetchNewsPerCategory(category, null);
+                break;
+            case R.id.scienceBtn:
+                category = "science";
+                fetchNewsPerCategory(category, null);
+                break;
+            case R.id.sportsBtn:
+                category = "sports";
+                fetchNewsPerCategory(category, null);
+                break;
+            case R.id.technologyBtn:
+                category = "technology";
+                fetchNewsPerCategory(category, null);
+                break;
+            case R.id.exitNewsBtn:
+                finish();
+                break;
+            case R.id.accountBtn:
+                startActivity(new Intent(this, AccountActivity.class));
                 finish();
                 break;
         }
+
     }
 
-    public void initializeElements() {
-        newsTitle.setText(headlines.getTitle());
-        author.setText(headlines.getAuthor());
-        timeOfPublishing.setText(headlines.getPublishedAt());
-        newsDetails.setText(headlines.getDescription());
-        newsContent.setText(headlines.getContent());
-        Picasso.get().load(headlines.getUrlToImage()).into(imageNewsImage);
+    //show which category is chosen by changing the color of the counterpart btn
+    public void manageBtnColours(String category) {
+        businessBtn.setBackgroundColor(0xFF03A9F4);
+        entertainmentBtn.setBackgroundColor(0xFF03A9F4);
+        generalBtn.setBackgroundColor(0xFF03A9F4);
+        healthBtn.setBackgroundColor(0xFF03A9F4);
+        scienceBtn.setBackgroundColor(0xFF03A9F4);
+        sportsBtn.setBackgroundColor(0xFF03A9F4);
+        technologyBtn.setBackgroundColor(0xFF03A9F4);
 
+        if (category.equals("business")) {
+            businessBtn.setBackgroundColor(Color.MAGENTA);
+        } else if (category.equals("entertainment")) {
+            entertainmentBtn.setBackgroundColor(Color.MAGENTA);
+        } else if (category.equals("general")) {
+            generalBtn.setBackgroundColor(Color.MAGENTA);
+        } else if (category.equals("health")) {
+            healthBtn.setBackgroundColor(Color.MAGENTA);
+        } else if (category.equals("science")) {
+            scienceBtn.setBackgroundColor(Color.MAGENTA);
+        } else if (category.equals("sports")) {
+            sportsBtn.setBackgroundColor(Color.MAGENTA);
+        } else if (category.equals("technology")) {
+            technologyBtn.setBackgroundColor(Color.MAGENTA);
+        }
+    }
+
+    //creation of listener
+    private final OnFetchDataListener<NewsApiResponse> listener = new OnFetchDataListener<NewsApiResponse>() {
+        @Override
+        public void onFetchData(List<NewsHeadlines> list, String message) {
+            if (list.isEmpty()) {
+                //dismiss loading bar when data fetched
+                loadingDialog.dismissDialog();
+                //empty searchBar
+                searchBarSearchView.setQuery("", false);
+                searchBarSearchView.clearFocus();
+                Toast.makeText(NewsFeedActivity.this, "No data found!", Toast.LENGTH_LONG).show();
+            } else {
+                showNews(list);
+                //dismiss loading bar when data fetched
+                loadingDialog.dismissDialog();
+            }
+        }
+
+        @Override
+        public void onError(String message) {
+            Toast.makeText(NewsFeedActivity.this, "Error Occurred!", Toast.LENGTH_LONG).show();
+        }
+    };
+
+    private void showNews(List<NewsHeadlines> list) {
+        recyclerView = (RecyclerView) findViewById(R.id.newsFeedRecyclerView);
+        //Avoid unnecessary layout passes by setting setHasFixedSize to true when changing the contents of the adapter does not change it's height or the width.
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 1)); // 1 stands for 1 cell per row
+
+        adapter = new CustomAdapter(this, list, this);
+
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
-    public void onBackPressed() {
+    public void OnNewsClicked(NewsHeadlines headlines) {
+        startActivity(new Intent(this, ClickedNewsDetails.class).putExtra("data", headlines));
         finish();
     }
 
@@ -211,7 +346,6 @@ public class ClickedNewsDetails extends AppCompatActivity implements View.OnClic
                     FaceDetectorOptions options =
                             new FaceDetectorOptions.Builder()
                                     .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-                                    .setContourMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
                                     .enableTracking()
                                     .build();
 
@@ -263,11 +397,6 @@ public class ClickedNewsDetails extends AppCompatActivity implements View.OnClic
 
                 FaceUtils faceUtils = new FaceUtils(face);
 
-                //get current user
-                currentUser = mAuth.getCurrentUser();
-
-                String frame = database.push().getKey();
-
                 String axeXFacing = faceUtils.checkAxeXFacing();
                 String axeYFacing = faceUtils.checkAxeYFacing();
 
@@ -275,20 +404,17 @@ public class ClickedNewsDetails extends AppCompatActivity implements View.OnClic
                 float rotY = face.getHeadEulerAngleY();
                 float rotZ = face.getHeadEulerAngleZ();
 
-                database.child("url").setValue(headlines.getUrl());
-
-                database.child("frames").child(frame).child("rotX").setValue(rotX);
-                database.child("frames").child(frame).child("rotY").setValue(rotY);
-                database.child("frames").child(frame).child("rotZ").setValue(rotZ);
-
-                database.child("frames").child(frame).child("axeXFacing").setValue(axeXFacing);
-                database.child("frames").child(frame).child("axeYFacing").setValue(axeYFacing);
-
-                // smiling probability
-                if (face.getSmilingProbability() != null) {
-                    float smileProb = face.getSmilingProbability();
-                    database.child("frames").child(frame).child("smilingProbability").setValue(smileProb);
-                }
+//                //get current user
+//                currentUser = mAuth.getCurrentUser();
+//
+//                String frame = database.push().getKey();
+//
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotX").setValue(rotX);
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotY").setValue(rotY);
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotZ").setValue(rotZ);
+//
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("axeXFacing").setValue(axeXFacing);
+//                database.child(currentUser.getUid()).child("frames").child(frame).child("axeYFacing").setValue(axeYFacing);
 
             }
         }

@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo;
+package com.nektariakallioupi.newsFeedUserStats;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -7,8 +7,8 @@ import android.os.Bundle;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.nektariakallioupi.facedetectiondemo.Authentication.SignInActivity;
-import com.nektariakallioupi.facedetectiondemo.NewsFeed.NewsFeedActivity;
+import com.nektariakallioupi.newsFeedUserStats.Authentication.SignInActivity;
+import com.nektariakallioupi.newsFeedUserStats.NewsFeed.NewsFeedActivity;
 
 import java.util.Timer;
 import java.util.TimerTask;

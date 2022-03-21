@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nektariakallioupi.facedetectiondemo">
+    package="com.nektariakallioupi.newsFeedUserStats">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -18,18 +18,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FaceDetectionDemo">
         <activity
-            android:name=".Authentication.AccountActivity"
+            android:name="com.nektariakallioupi.newsFeedUserStats.Authentication.AccountActivity"
             android:exported="false" />
         <activity
-            android:name=".NewsFeed.ClickedNewsDetails"
+            android:name="com.nektariakallioupi.newsFeedUserStats.NewsFeed.ClickedNewsDetails"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".NewsFeed.NewsFeedActivity"
+            android:name="com.nektariakallioupi.newsFeedUserStats.NewsFeed.NewsFeedActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".LoadingTab"
+            android:name="com.nektariakallioupi.newsFeedUserStats.LoadingTab"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -39,15 +39,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Authentication.SignUpActivity"
+            android:name="com.nektariakallioupi.newsFeedUserStats.Authentication.SignUpActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Authentication.SignInActivity"
+            android:name="com.nektariakallioupi.newsFeedUserStats.Authentication.SignInActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".FaceDetection.LiveFaceDetection"
+            android:name="com.nektariakallioupi.newsFeedUserStats.FaceDetection.LiveFaceDetection"
             android:exported="false"
             android:screenOrientation="portrait" />
     </application>

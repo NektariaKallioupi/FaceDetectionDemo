@@ -1,11 +1,10 @@
-package com.nektariakallioupi.facedetectiondemo.NewsFeed;
+package com.nektariakallioupi.newsFeedUserStats.NewsFeed;
 
 import android.content.Context;
 import android.widget.Toast;
 
-import com.nektariakallioupi.facedetectiondemo.Models.NewsApiResponse;
-import com.nektariakallioupi.facedetectiondemo.NewsFeed.OnFetchDataListener;
-import com.nektariakallioupi.facedetectiondemo.R;
+import com.nektariakallioupi.newsFeedUserStats.Models.NewsApiResponse;
+import com.nektariakallioupi.newsFeedUserStats.R;
 
 import retrofit2.Call;
 import retrofit2.Callback;

@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.Models;
+package com.nektariakallioupi.newsFeedUserStats.Models;
 
 import java.io.Serializable;
 

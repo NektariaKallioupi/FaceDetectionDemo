@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.Authentication;
+package com.nektariakallioupi.newsFeedUserStats.Authentication;
 
 public class UserInfo {
 

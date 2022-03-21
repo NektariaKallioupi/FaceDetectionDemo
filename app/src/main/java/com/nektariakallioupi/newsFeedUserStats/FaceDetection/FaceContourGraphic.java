@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.FaceDetection;
+package com.nektariakallioupi.newsFeedUserStats.FaceDetection;
 
 import android.graphics.Canvas;
 import android.graphics.Color;

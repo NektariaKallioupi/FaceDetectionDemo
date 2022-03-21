@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo;
+package com.nektariakallioupi.newsFeedUserStats;
 
 import org.junit.Test;
 

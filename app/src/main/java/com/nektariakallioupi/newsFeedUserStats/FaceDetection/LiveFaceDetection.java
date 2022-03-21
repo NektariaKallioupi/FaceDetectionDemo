@@ -1,4 +1,4 @@
-package com.nektariakallioupi.facedetectiondemo.FaceDetection;
+package com.nektariakallioupi.newsFeedUserStats.FaceDetection;
 
 import static androidx.camera.view.PreviewView.ScaleType.FILL_CENTER;
 
@@ -43,9 +43,9 @@ import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
-import com.nektariakallioupi.facedetectiondemo.Authentication.AccountActivity;
-import com.nektariakallioupi.facedetectiondemo.R;
-import com.nektariakallioupi.facedetectiondemo.Utils;
+import com.nektariakallioupi.newsFeedUserStats.Authentication.AccountActivity;
+import com.nektariakallioupi.newsFeedUserStats.R;
+import com.nektariakallioupi.newsFeedUserStats.Utils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
