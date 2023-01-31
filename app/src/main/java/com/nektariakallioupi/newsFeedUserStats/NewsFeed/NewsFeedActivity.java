@@ -404,17 +404,17 @@ public class NewsFeedActivity extends AppCompatActivity implements SelectNewsLis
                 float rotY = face.getHeadEulerAngleY();
                 float rotZ = face.getHeadEulerAngleZ();
 
-//                //get current user
-//                currentUser = mAuth.getCurrentUser();
-//
-//                String frame = database.push().getKey();
-//
-//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotX").setValue(rotX);
-//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotY").setValue(rotY);
-//                database.child(currentUser.getUid()).child("frames").child(frame).child("rotZ").setValue(rotZ);
-//
-//                database.child(currentUser.getUid()).child("frames").child(frame).child("axeXFacing").setValue(axeXFacing);
-//                database.child(currentUser.getUid()).child("frames").child(frame).child("axeYFacing").setValue(axeYFacing);
+                //get current userS
+                currentUser = mAuth.getCurrentUser();
+
+                String frame = database.push().getKey();
+
+                database.child(currentUser.getUid()).child("frames").child(frame).child("rotX").setValue(rotX);
+                database.child(currentUser.getUid()).child("frames").child(frame).child("rotY").setValue(rotY);
+                database.child(currentUser.getUid()).child("frames").child(frame).child("rotZ").setValue(rotZ);
+
+                database.child(currentUser.getUid()).child("frames").child(frame).child("axeXFacing").setValue(axeXFacing);
+                database.child(currentUser.getUid()).child("frames").child(frame).child("axeYFacing").setValue(axeYFacing);
 
             }
         }

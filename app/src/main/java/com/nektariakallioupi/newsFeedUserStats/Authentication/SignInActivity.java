@@ -75,8 +75,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     // sign in with email and password using firebase
     public void signInUser() {
 
-        String givenEmail = email.getText().toString();
-        String givenPassword = password.getText().toString();
+        String givenEmail = email.getText().toString().trim();
+        String givenPassword = password.getText().toString().trim();
 
         if (givenEmail.isEmpty()) {
             email.setError("Should not be empty");

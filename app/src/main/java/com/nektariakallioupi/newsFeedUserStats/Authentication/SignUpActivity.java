@@ -85,9 +85,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
     private void signUpUser() {
 
-        String givenEmail = email.getText().toString();
-        String givenPassword = password.getText().toString();
-        String givenUsername = username.getText().toString();
+        String givenEmail = email.getText().toString().trim();
+        String givenPassword = password.getText().toString().trim();
+        String givenUsername = username.getText().toString().trim();
 
         if (givenEmail.isEmpty()) {
             email.setError("Should not be empty");
